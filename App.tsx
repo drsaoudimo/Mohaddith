@@ -228,7 +228,43 @@ const App: React.FC = () => {
               <Visualizer data={result} />
 
               {/* Narrator Chain */}
-              {result.narratorChain && result.narratorChain.length > 0 && (
+              {result.narrators && result.narrators.length > 0 ? (
+                 <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-200">
+                    <h3 className="text-2xl font-bold text-emerald-900 mb-6 font-serif border-b border-slate-100 pb-3">
+                      دراسة الأسانيد وتراجم الرواة
+                    </h3>
+                    <div className="space-y-6">
+                      {result.narrators.map((narrator, idx) => (
+                        <div key={idx} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
+                          <div className="flex-shrink-0 flex flex-col items-center justify-center w-16 md:w-24">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl font-bold shadow-sm border-2 border-emerald-200 font-serif mb-2">
+                              {idx + 1}
+                            </div>
+                            <span className="text-xs font-bold text-slate-500 bg-slate-200 px-2 py-1 rounded-full">
+                              {narrator.reliabilityScore}%
+                            </span>
+                          </div>
+                          <div className="flex-grow">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                              <h4 className="text-xl font-bold text-emerald-900 font-serif">{narrator.name}</h4>
+                              <span className={`text-sm font-bold px-3 py-1 rounded-full mt-2 md:mt-0 w-fit ${
+                                narrator.reliabilityScore >= 80 ? 'bg-emerald-100 text-emerald-800' :
+                                narrator.reliabilityScore >= 60 ? 'bg-teal-100 text-teal-800' :
+                                narrator.reliabilityScore >= 40 ? 'bg-amber-100 text-amber-800' :
+                                'bg-rose-100 text-rose-800'
+                              }`}>
+                                {narrator.status}
+                              </span>
+                            </div>
+                            <p className="text-slate-700 font-serif leading-relaxed text-lg">
+                              {narrator.biographySnippet}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                 </div>
+              ) : result.narratorChain && result.narratorChain.length > 0 && (
                  <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-200">
                     <h3 className="text-xl font-bold text-emerald-900 mb-8 font-serif text-center">
                       سلسلة الرواة (الإسناد)

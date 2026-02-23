@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { AnalysisResult, Verdict } from "../types";
+import { AnalysisResult, Verdict, Narrator } from "../types";
 
 const apiKey = process.env.API_KEY || '';
 
@@ -40,6 +40,20 @@ const analysisSchema: Schema = {
       items: { type: Type.STRING },
       description: "List of Narrators (Sanad)."
     },
+    narrators: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING, description: "Narrator's full name" },
+          reliabilityScore: { type: Type.NUMBER, description: "Reliability score (0-100)" },
+          status: { type: Type.STRING, description: "Status (e.g., Thiqah, Saduq, Da'if, Majhul)" },
+          biographySnippet: { type: Type.STRING, description: "Brief info from databases like Tahdhib al-Tahdhib" }
+        },
+        required: ["name", "reliabilityScore", "status", "biographySnippet"]
+      },
+      description: "Detailed analysis of each narrator in the chain."
+    },
     orthogonalityCheck: {
       type: Type.STRING,
       description: "Explanation of the Textual Comparison with Quran and Famous Sunnah."
@@ -60,7 +74,7 @@ export const analyzeHadith = async (text: string): Promise<AnalysisResult> => {
     مهمتك: الحكم على الأحاديث باستخدام قواعد "علم الجرح والتعديل" و"نقد المتن"، مع الانتباه الشديد للتحريفات النصية.
 
     القواعد الحاكمة (Criteria):
-    1. **اتصال السند وعدالة الرواة**: تحقق من السلسلة.
+    1. **اتصال السند وعدالة الرواة**: تحقق من السلسلة. قم بتخريج الرواة وتقييمهم بناءً على كتب الرجال (مثل تهذيب الكمال، تقريب التهذيب).
     2. **سلامة المتن (Textual Integrity)**: الخلو من الشذوذ والعلة القادحة.
     3. **الموافقة للكتاب (Quranic Alignment)**: ما خالف القرآن مخالفة صريحة فهو "منكر" أو "موضوع".
     4. **كشف التحريف (Distortion Detection)**: انتبه لأدوات النفي (ما، ليس، لا) التي قد تُدس على حديث مشهور لقلب معناه (مثلاً: "ما إنما الأعمال بالنيات"). هذا يعتبر "قلب للمتن" ويجعل الحديث **موضوعاً** فوراً.
@@ -76,7 +90,7 @@ export const analyzeHadith = async (text: string): Promise<AnalysisResult> => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: [
         { role: 'user', parts: [{ text: `قم بالتحليل والتخريج والحكم على هذا النص: "${text}"` }] }
       ],
@@ -105,6 +119,7 @@ export const analyzeHadith = async (text: string): Promise<AnalysisResult> => {
       reasoning: "تعذر الوصول إلى المصادر الرقمية. يرجى التحقق من الاتصال.",
       mathFormula: "Error = 1",
       narratorChain: [],
+      narrators: [],
       orthogonalityCheck: "خطأ في المعالجة."
     };
   }

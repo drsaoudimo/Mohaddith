@@ -5,6 +5,13 @@ export enum Verdict {
   MAWDU = 'موضوع / منكر'
 }
 
+export interface Narrator {
+  name: string;
+  reliabilityScore: number; // 0-100
+  status: string; // e.g., Thiqah, Saduq, Da'if, Majhul
+  biographySnippet: string;
+}
+
 export interface AnalysisResult {
   verdict: Verdict;
   confidenceScore: number; // 0-100
@@ -14,6 +21,7 @@ export interface AnalysisResult {
   reasoning: string;
   mathFormula: string;
   narratorChain?: string[];
+  narrators?: Narrator[];
   orthogonalityCheck: string; // Explanation of the M perpendicular Q check
 }
 
