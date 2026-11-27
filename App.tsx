@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { analyzeHadith } from './services/geminiService';
+import { analyzeHadith } from './services/aiService';
 import { AnalysisResult, Verdict } from './types';
 import { Visualizer } from './components/Visualizer';
 
@@ -53,7 +53,8 @@ const App: React.FC = () => {
       setResult(data);
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ في عملية التحقق. يرجى المحاولة مرة أخرى.');
+      const message = e instanceof Error ? e.message : 'حدث خطأ في عملية التحقق. يرجى المحاولة مرة أخرى.';
+      alert(message);
     } finally {
       setLoading(false);
     }
