@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_MODEL': JSON.stringify(env.GEMINI_MODEL || 'gemini-3-flash-preview'),
-        'process.env.AI_PROVIDER': JSON.stringify(env.AI_PROVIDER || 'anthropic'),
+        'process.env.AI_PROVIDER': JSON.stringify(env.AI_PROVIDER || 'gemini'),
         'process.env.ANTHROPIC_API_KEY': JSON.stringify(env.ANTHROPIC_API_KEY),
         'process.env.ANTHROPIC_MODEL': JSON.stringify(env.ANTHROPIC_MODEL || 'claude-sonnet-5-5')
       },

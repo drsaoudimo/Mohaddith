@@ -4,23 +4,36 @@ import { AnalysisResult } from "../types";
 /**
  * خدمة ربط التطبيق بنموذج ذكاء اصطناعي.
  *
- * المزوّد الافتراضي: Anthropic Claude Sonnet (claude-sonnet-5-5).
- * يمكن تغيير المزوّد والنموذج عبر متغيرات البيئة في .env.local:
+ * المزوّد الافتراضي: Gemini (Gemini 3 Flash Preview).
+ * يمكن تغيير المزوّد والنموذج عبر متغيرات البيئة في .env.local،
+ * كما يمكن للمستخدم اختيار المزوّد من واجهة التطبيق عند التشغيل.
  *
- *   AI_PROVIDER=anthropic | gemini
- *   ANTHROPIC_MODEL=claude-sonnet-5-5
- *   ANTHROPIC_API_KEY=...
- *   GEMINI_MODEL=gemini-3-flash-preview
+ *   AI_PROVIDER=gemini | anthropic
  *   GEMINI_API_KEY=...
+ *   GEMINI_MODEL=gemini-3-flash-preview
+ *   ANTHROPIC_API_KEY=...
+ *   ANTHROPIC_MODEL=claude-sonnet-5-5
  */
 
-const AI_PROVIDER = (process.env.AI_PROVIDER || 'anthropic').toLowerCase();
+export type AIProvider = 'anthropic' | 'gemini';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 
 const GEMINI_API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+
+const DEFAULT_PROVIDER: AIProvider =
+  (process.env.AI_PROVIDER || 'gemini').toLowerCase() === 'anthropic' ? 'anthropic' : 'gemini';
+
+/** المزوّد الافتراضي (من البيئة أو الإعداد المبدئي). */
+export const getDefaultProvider = (): AIProvider => DEFAULT_PROVIDER;
+
+/** قائمة المزوّدين المتاحة لاختيار المستخدم من الواجهة. */
+export const PROVIDERS: { id: AIProvider; label: string; model: string }[] = [
+  { id: 'gemini', label: 'Gemini', model: GEMINI_MODEL },
+  { id: 'anthropic', label: 'Claude (Anthropic)', model: ANTHROPIC_MODEL },
+];
 
 /** وصف بنية النتيجة المطلوبة، يُستخدم في prompt نموذج Claude (لا يدعم schema رسميًا). */
 const resultSchemaDescription = `
@@ -230,9 +243,11 @@ async function analyzeWithGemini(text: string): Promise<AnalysisResult> {
 
 /**
  * تطلب من نموذج الذكاء الاصطناعي تحليل نص الحديث وإرجاع الحكم ضمن بنية بيانات منظمة.
+ * يمكن تحديد المزوّد صراحةً (اختيار المستخدم من الواجهة)، وإلا يُستخدم المزوّد الافتراضي.
  */
-export const analyzeHadith = async (text: string): Promise<AnalysisResult> => {
-  if (AI_PROVIDER === 'gemini') {
+export const analyzeHadith = async (text: string, provider?: AIProvider): Promise<AnalysisResult> => {
+  const selected = provider === 'anthropic' || provider === 'gemini' ? provider : DEFAULT_PROVIDER;
+  if (selected === 'gemini') {
     return analyzeWithGemini(text);
   }
   return analyzeWithAnthropic(text);

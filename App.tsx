@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { analyzeHadith } from './services/aiService';
+import { analyzeHadith, getDefaultProvider, PROVIDERS, AIProvider } from './services/aiService';
 import { AnalysisResult, Verdict } from './types';
 import { Visualizer } from './components/Visualizer';
 
@@ -41,6 +41,11 @@ const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [provider, setProvider] = useState<AIProvider>(() => {
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('aiProvider') : null;
+    return saved === 'anthropic' || saved === 'gemini' ? saved : getDefaultProvider();
+  });
+  const [providerOpen, setProviderOpen] = useState(false);
 
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
@@ -49,7 +54,7 @@ const App: React.FC = () => {
     setResult(null);
     
     try {
-      const data = await analyzeHadith(inputText);
+      const data = await analyzeHadith(inputText, provider);
       setResult(data);
     } catch (e) {
       console.error(e);
@@ -86,9 +91,44 @@ const App: React.FC = () => {
               المدقق الحديثي
             </h1>
           </div>
-          <span className="text-[10px] md:text-xs bg-emerald-800 px-3 py-1 rounded-full text-emerald-200 border border-emerald-700 font-sans">
-            الإصدار العلمي المنهجي
-          </span>
+                    <div className="flex items-center gap-3">
+            <span className="text-[10px] md:text-xs bg-emerald-800 px-3 py-1 rounded-full text-emerald-200 border border-emerald-700 font-sans whitespace-nowrap">
+              الإصدار العلمي المنهجي
+            </span>
+            <div className="relative">
+              <button
+                onClick={() => setProviderOpen((o) => !o)}
+                className="flex items-center gap-2 text-[10px] md:text-xs bg-emerald-800 hover:bg-emerald-700 px-3 py-1 rounded-full text-emerald-200 border border-emerald-700 font-sans transition-colors whitespace-nowrap"
+              >
+                <svg className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="9" />
+                  <path strokeLinecap="round" d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
+                </svg>
+                {PROVIDERS.find((p) => p.id === provider)?.label}
+                <svg className="h-3 w-3 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {providerOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-50">
+                  {PROVIDERS.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setProvider(p.id);
+                        window.localStorage.setItem('aiProvider', p.id);
+                        setProviderOpen(false);
+                      }}
+                      className={'w-full text-left px-4 py-2 text-sm font-sans flex items-center justify-between hover:bg-emerald-50 transition-colors ' + (p.id === provider ? 'text-emerald-700 font-bold' : 'text-slate-700')}
+                    >
+                      <span>{p.label}</span>
+                      {p.id === provider && <span className="text-emerald-600">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
